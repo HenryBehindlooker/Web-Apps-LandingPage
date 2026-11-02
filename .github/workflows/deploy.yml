@@ -1,0 +1,61 @@
+name: Seite bauen und veröffentlichen
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "23 * * * *"   # stündlich: neue Patchnotes & Ergebnisse holen
+  workflow_dispatch:         # manuell starten: Actions → „Run workflow“
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Werkzeuge installieren
+        run: npm ci --no-audit --no-fund
+
+      - id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Seite zusammenstellen
+        run: |
+          mkdir -p _site
+          tar --exclude=./.git --exclude=./.github --exclude=./scripts --exclude=./_site --exclude=./README.md --exclude=./node_modules --exclude=./package.json --exclude=./package-lock.json -cf - . | tar -xf - -C _site
+
+      - name: Titel & Link-Vorschau eintragen
+        run: node scripts/prepare-html.mjs _site
+        env:
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
+
+      - name: Feed laden (Patchnotes & Esports)
+        run: node scripts/update-feed.mjs _site
+        env:
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
+          # Optional: unter Settings → Secrets and variables → Actions anlegen
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

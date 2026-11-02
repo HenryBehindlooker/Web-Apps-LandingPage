@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Web Apps</title>
+  <meta name="description" content="Eine Sammlung von Web Apps – direkt im Browser nutzbar.">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0b0d14" media="(prefers-color-scheme: dark)">
+  <!-- Link-Vorschau (wird beim Veröffentlichen automatisch aus apps.js befüllt) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Web Apps">
+  <meta property="og:title" content="Web Apps">
+  <meta property="og:description" content="Eine Sammlung von Web Apps – direkt im Browser nutzbar.">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="alternate" type="application/rss+xml" title="LoL Patchnotes & Worlds" href="feed.xml">
+  <script>
+    // Theme vor dem Rendern setzen, damit nichts aufblitzt
+    try {
+      var t = localStorage.getItem("theme");
+      if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+
+  <header class="top">
+    <a class="brand" href="./" aria-label="Startseite">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span id="brand-name">Web Apps</span>
+    </a>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Hell/Dunkel umschalten">
+      <svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    </button>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1 id="site-title">Web Apps</h1>
+      <p class="tagline" id="site-tagline"></p>
+
+      <div class="controls">
+        <label class="search">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input id="search" type="search" placeholder="Apps durchsuchen …" autocomplete="off" aria-label="Apps durchsuchen">
+          <kbd>/</kbd>
+        </label>
+        <div class="filters" id="filters" role="group" aria-label="Nach Kategorie filtern"></div>
+      </div>
+    </section>
+
+    <p class="count" id="count" aria-live="polite"></p>
+    <ul class="grid" id="grid"></ul>
+    <p class="empty" id="empty" hidden>Keine App gefunden. Versuch einen anderen Suchbegriff.</p>
+
+    <section class="news" id="news" aria-labelledby="news-title" hidden></section>
+  </main>
+
+  <footer class="foot">
+    <span id="year"></span> · Alle Apps laufen direkt im Browser.
+  </footer>
+
+  <script src="apps.js"></script>
+  <script src="feed.js"></script>
+  <script src="script.js"></script>
+  <script src="news.js"></script>
+</body>
+</html>

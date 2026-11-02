@@ -1,0 +1,12 @@
+{
+  "name": "webapps-landing",
+  "private": true,
+  "description": "Build-Werkzeuge für die Landing Page (nur für GitHub Actions nötig)",
+  "type": "module",
+  "scripts": {
+    "feed": "node scripts/update-feed.mjs ."
+  },
+  "dependencies": {
+    "sharp": "^0.34.0"
+  }
+}
