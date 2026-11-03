@@ -18,6 +18,7 @@ Keine Abhängigkeiten, kein Framework.
 | `github-apps.js`                | Platzhalter – wird beim Veröffentlichen durch deine GitHub-Pages-Seiten ersetzt |
 | `feed.js`                       | Platzhalter – wird beim Veröffentlichen durch echte Daten ersetzt |
 | `scripts/update-feed.mjs`       | Holt Patchnotes & Esport-Daten, postet optional nach Discord (läuft auf GitHub) |
+| `scripts/leaguepedia.mjs`       | Esport-Daten von Leaguepedia (Ersatz, wenn lolesports ablehnt) |
 | `scripts/update-github.mjs`     | Sucht deine öffentlichen GitHub-Pages-Seiten (läuft auf GitHub) |
 | `scripts/prepare-html.mjs`      | Trägt Titel & Link-Vorschau aus `apps.js` in die Seite ein   |
 | `package.json`, `package-lock.json` | Bildverkleinerung (`sharp`) – nur für die GitHub Action  |
@@ -99,7 +100,11 @@ und veröffentlicht sie mit (Ordner `feed-img/`) – da musst du nichts tun.
 
 - **Patchnotes** kommen von der offiziellen Seite `leagueoflegends.com/de-de/news/tags/patch-notes/`.
 - **Esports** (Live, Ergebnisse, nächste Spiele mit Countdown) kommen von der Schnittstelle, die
-  `lolesports.com` selbst nutzt. Sie ist nicht offiziell dokumentiert und kann sich ändern.
+  `lolesports.com` selbst nutzt. Lehnt sie ab (aktuell der Fall bei Anfragen von GitHub),
+  kommen die Daten automatisch von **Leaguepedia** (`lol.fandom.com`, offene Cargo-Schnittstelle,
+  Inhalte unter CC BY-SA – die Seite nennt Leaguepedia deshalb als Quelle).
+  Leaguepedia kennt die Kürzel: worlds, msi, first_stand, lec, lck, lpl, lta_north, lta_south, prime_league
+  (Zuordnung in `scripts/leaguepedia.mjs`).
 - **Ligen als Tabs:** in `apps.js` unter `NEWS.leagues`, z. B. `["worlds", "msi", "lec", "lck"]`.
   Ein falsches Kürzel wird übersprungen; das Actions-Log listet dann alle gültigen auf.
   Beim Öffnen wird die Liga mit einem Live-Spiel bzw. dem jüngsten Ergebnis gezeigt,

@@ -381,6 +381,7 @@
     if (tl) ep.title.appendChild(tl);
     ep.title.appendChild(document.createTextNode(current.title || current.name || "Esports"));
     leagueLink.href = httpUrl(current.url) || "https://lolesports.com/";
+    leagueLink.firstChild.nodeValue = current.source || "lolesports";
 
     if (current.error) {
       spoilerBtn.hidden = true;
@@ -407,6 +408,13 @@
     t.dateTime = FEED.updated;
     t.title = new Date(FEED.updated).toLocaleString("de-DE");
     foot.appendChild(t);
+  }
+  if (leagues.some(function (lg) { return lg.source === "Leaguepedia"; })) {
+    var credit = el("span", "credit", "Esport-Daten: ");
+    var lp = extLink("https://lol.fandom.com/", null, "Leaguepedia");
+    credit.appendChild(lp);
+    credit.appendChild(document.createTextNode(" (CC BY-SA)"));
+    foot.appendChild(credit);
   }
   var rss = el("a", "rss", null);
   rss.href = "feed.xml";

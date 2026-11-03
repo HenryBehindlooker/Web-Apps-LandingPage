@@ -333,3 +333,5 @@ main, .top, .foot { width: 100%; max-width: 1120px; margin: 0 auto; padding-inli
 @media (max-width: 480px) {
   .patch-list li:first-child .patch-thumb { width: 64px; height: 36px; border-radius: 7px; }
 }
+.news-foot .credit { flex: 1; }
+.news-foot .credit a { color: inherit; }

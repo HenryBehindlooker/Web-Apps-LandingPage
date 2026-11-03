@@ -16,6 +16,7 @@ import { mkdir, writeFile, readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import vm from "node:vm";
+import { fetchLeaguepedia } from "./leaguepedia.mjs";
 
 const OUT = process.argv[2] || ".";
 const SITE_URL = (process.env.SITE_URL || "").replace(/\/?$/, "/");
@@ -424,8 +425,13 @@ export async function main() {
   try {
     feed.esports = await fetchEsports(slugs);
   } catch (e) {
-    console.warn(`✗ Esports: ${e.message}`);
-    feed.esports = { leagues: slugs.map((slug) => ({ slug, name: slug.toUpperCase(), error: true })) };
+    console.warn(`  lolesports.com nicht verfügbar (${e.message}) – nutze Leaguepedia.`);
+    try {
+      feed.esports = await fetchLeaguepedia(slugs, localImage);
+    } catch (e2) {
+      console.warn(`✗ Esports: ${e2.message}`);
+      feed.esports = { leagues: slugs.map((slug) => ({ slug, name: slug.toUpperCase(), error: true })) };
+    }
   }
   // Fehlgeschlagene Ligen mit dem letzten veröffentlichten Stand füllen
   feed.esports.leagues = feed.esports.leagues.map((lg) => {
