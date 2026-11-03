@@ -58,6 +58,9 @@ jobs:
           SITE_URL: ${{ steps.pages.outputs.base_url }}
           # Optional: unter Settings → Secrets and variables → Actions anlegen
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          # Optional: Leaguepedia-Bot-Passwort für höhere Abfrage-Limits (siehe README)
+          LEAGUEPEDIA_USER: ${{ secrets.LEAGUEPEDIA_USER }}
+          LEAGUEPEDIA_PASS: ${{ secrets.LEAGUEPEDIA_PASS }}
 
       - uses: actions/upload-pages-artifact@v3
         with:

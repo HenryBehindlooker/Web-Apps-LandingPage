@@ -29,37 +29,82 @@ const q = (s) => `"${String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 const sqlDate = (d) => d.toISOString().slice(0, 19).replace("T", " ");
 const parseDate = (s) => (s ? new Date(s.replace(" ", "T") + "Z") : null);
 
-async function cargo(params) {
-  const u = new URL(API);
-  const all = { action: "cargoquery", format: "json", limit: "100", ...params };
-  for (const [k, v] of Object.entries(all)) u.searchParams.set(k, v);
-  for (let attempt = 0; attempt < 3; attempt++) {
-    const res = await fetch(u, { headers: { "user-agent": UA, accept: "application/json" }, signal: AbortSignal.timeout(25000) });
-    if (!res.ok) throw new Error(`HTTP ${res.status} von Leaguepedia`);
-    const data = await res.json();
-    if (data.error) {
-      // Leaguepedia bremst zu schnelle Abfragen – kurz warten und erneut versuchen
-      if (/ratelimit/i.test(data.error.code || "") && attempt < 2) { await sleep(5000 * (attempt + 1)); continue; }
-      throw new Error(`Leaguepedia: ${data.error.info || data.error.code}`);
-    }
-    return (data.cargoquery || []).map((row) => row.title);
+/* ---------- Anmeldung (optional, für höhere Limits) ---------- */
+const LOGIN_USER = process.env.LEAGUEPEDIA_USER || "";
+const LOGIN_PASS = process.env.LEAGUEPEDIA_PASS || "";
+const jar = new Map();
+const cookieHeader = () => [...jar.values()].join("; ");
+function keepCookies(res) {
+  for (const c of res.headers.getSetCookie?.() || []) {
+    const pair = c.split(";")[0];
+    jar.set(pair.split("=")[0].trim(), pair.trim());
   }
-  throw new Error("Leaguepedia: zu viele Anfragen");
+}
+function headers(extra = {}) {
+  return { "user-agent": UA, accept: "application/json", ...(jar.size ? { cookie: cookieHeader() } : {}), ...extra };
 }
 
-async function fetchMatches(def) {
+let loginTried = false;
+async function login() {
+  if (loginTried || !LOGIN_USER || !LOGIN_PASS) return;
+  loginTried = true;
+  try {
+    const t = await fetch(`${API}?action=query&meta=tokens&type=login&format=json`, { headers: headers(), signal: AbortSignal.timeout(20000) });
+    keepCookies(t);
+    const token = (await t.json()).query.tokens.logintoken;
+    const res = await fetch(API, {
+      method: "POST",
+      headers: headers({ "content-type": "application/x-www-form-urlencoded" }),
+      body: new URLSearchParams({ action: "login", format: "json", lgname: LOGIN_USER, lgpassword: LOGIN_PASS, lgtoken: token }),
+      signal: AbortSignal.timeout(20000),
+    });
+    keepCookies(res);
+    const result = (await res.json()).login?.result;
+    console.log(result === "Success" ? "  Bei Leaguepedia angemeldet." : `  Anmeldung bei Leaguepedia fehlgeschlagen (${result}) – frage anonym.`);
+  } catch (e) {
+    console.warn("  Anmeldung bei Leaguepedia nicht möglich:", e.message);
+  }
+}
+
+async function cargo(params) {
+  await login();
+  const u = new URL(API);
+  const all = { action: "cargoquery", format: "json", limit: "500", ...params };
+  for (const [k, v] of Object.entries(all)) u.searchParams.set(k, v);
+  const waits = [20000, 45000, 90000]; // Leaguepedia bremst – geduldig erneut versuchen
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(u, { headers: headers(), signal: AbortSignal.timeout(30000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status} von Leaguepedia`);
+    const data = await res.json();
+    if (!data.error) return (data.cargoquery || []).map((row) => row.title);
+    const limited = /ratelimit/i.test(data.error.code || "") || /rate limit/i.test(data.error.info || "");
+    if (!limited || attempt >= waits.length) throw new Error(`Leaguepedia: ${data.error.info || data.error.code}`);
+    console.log(`  Leaguepedia bremst – warte ${waits[attempt] / 1000} s …`);
+    await sleep(waits[attempt]);
+  }
+}
+
+/** Eine einzige Abfrage für alle Ligen (schont das Limit) */
+async function fetchMatches(defs) {
   const now = Date.now();
+  const leagueFilter = defs.map((d) => `T.League LIKE ${q(d.like)}`).join(" OR ");
   return cargo({
     tables: "MatchSchedule=MS,Tournaments=T",
     join_on: "MS.OverviewPage=T.OverviewPage",
     fields: [
       "MS.Team1=Team1", "MS.Team2=Team2", "MS.Team1Score=Score1", "MS.Team2Score=Score2",
       "MS.Winner=Winner", "MS.DateTime_UTC=Date", "MS.BestOf=BestOf", "MS.Round=Round",
-      "MS.Tab=Tab", "MS.MatchId=MatchId", "MS.OverviewPage=Page", "T.Name=Tournament",
+      "MS.Tab=Tab", "MS.MatchId=MatchId", "MS.OverviewPage=Page", "T.League=League",
     ].join(","),
-    where: `T.League LIKE ${q(def.like)} AND MS.DateTime_UTC >= ${q(sqlDate(new Date(now - 300 * 864e5)))} AND MS.DateTime_UTC <= ${q(sqlDate(new Date(now + 60 * 864e5)))}`,
+    where: `(${leagueFilter}) AND MS.DateTime_UTC >= ${q(sqlDate(new Date(now - 300 * 864e5)))} AND MS.DateTime_UTC <= ${q(sqlDate(new Date(now + 60 * 864e5)))}`,
     order_by: "MS.DateTime_UTC DESC",
   });
+}
+
+/** Passt ein Liga-Name aus Leaguepedia auf ein LIKE-Muster wie "%World Championship%"? */
+function matchesLike(value, like) {
+  const re = new RegExp("^" + like.split("%").map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join(".*") + "$", "i");
+  return re.test(value || "");
 }
 
 async function fetchTeams(names) {
@@ -69,7 +114,6 @@ async function fetchTeams(names) {
     const chunk = list.slice(i, i + 40);
     const rows = await cargo({ tables: "Teams", fields: "Name,Short,Image", where: `Name IN (${chunk.map(q).join(",")})` });
     for (const r of rows) out.set(r.Name, r);
-    await sleep(800);
   }
   return out;
 }
@@ -98,22 +142,24 @@ function shortCode(name) {
  */
 export async function fetchLeaguepedia(slugs, saveImage) {
   const now = Date.now();
-  const raw = [];
-  for (const slug of slugs) {
-    const def = LEAGUES[slug];
-    if (!def) {
-      console.warn(`  ! Liga "${slug}" kennt die Leaguepedia-Anbindung nicht. Bekannt: ${Object.keys(LEAGUES).join(", ")}`);
-      continue;
-    }
+  const known = slugs.filter((slug) => {
+    if (LEAGUES[slug]) return true;
+    console.warn(`  ! Liga "${slug}" kennt die Leaguepedia-Anbindung nicht. Bekannt: ${Object.keys(LEAGUES).join(", ")}`);
+    return false;
+  });
+  let all = null;
+  if (known.length) {
     try {
-      raw.push({ slug, def, rows: await fetchMatches(def) });
-      console.log(`  ✓ ${slug} (Leaguepedia)`);
+      all = await fetchMatches(known.map((s) => LEAGUES[s]));
+      console.log(`  ✓ Leaguepedia: ${all.length} Spiele für ${known.join(", ")}`);
     } catch (e) {
-      console.warn(`  ✗ ${slug} (Leaguepedia): ${e.message}`);
-      raw.push({ slug, def, error: true });
+      console.warn(`  ✗ Leaguepedia: ${e.message}`);
     }
-    await sleep(800);
   }
+  const raw = known.map((slug) => {
+    const def = LEAGUES[slug];
+    return all ? { slug, def, rows: all.filter((r) => matchesLike(r.League, def.like)) } : { slug, def, error: true };
+  });
   if (!raw.length) throw new Error("Keine der eingestellten Ligen bekannt");
 
   // Team-Kürzel und Logos in einem Rutsch holen

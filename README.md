@@ -119,6 +119,20 @@ und veröffentlicht sie mit (Ordner `feed-img/`) – da musst du nichts tun.
   bräuchten Tracking-Skripte von X und die kostenpflichtige API.
 - Ganzen Bereich ausblenden: in `apps.js` `show: false` setzen.
 
+### Leaguepedia-Anmeldung (empfohlen)
+
+Anonyme Abfragen von GitHub-Servern teilen sich bei Leaguepedia ein gemeinsames Limit und werden
+deshalb oft gebremst. Mit einem eigenen (kostenlosen) Bot-Passwort gilt dein eigenes, höheres Limit:
+
+1. Auf https://www.fandom.com ein kostenloses Konto anlegen und anmelden.
+2. https://lol.fandom.com/wiki/Special:BotPasswords öffnen, einen Namen vergeben (z. B. `feed`),
+   nur das Recht **„Basic rights“** anhaken → **Create**. Angezeigt werden ein Benutzername
+   (`DeinName@feed`) und ein Passwort.
+3. In GitHub unter **Settings → Secrets and variables → Actions** zwei Secrets anlegen:
+   `LEAGUEPEDIA_USER` = `DeinName@feed`, `LEAGUEPEDIA_PASS` = das angezeigte Passwort.
+
+Das Bot-Passwort darf nur lesen und kann auf derselben Seite jederzeit gelöscht werden.
+
 ### Discord-Benachrichtigungen (optional)
 
 Neue Patchnotes und neue Ergebnisse werden automatisch in einen Kanal deines Discord-Servers gepostet
