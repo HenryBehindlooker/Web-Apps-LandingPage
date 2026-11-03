@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "23 * * * *"   # stündlich: neue Patchnotes & Ergebnisse holen
+    - cron: "23 * * * *"   # stündlich: neue Patchnotes, Ergebnisse und GitHub-Seiten holen
   workflow_dispatch:         # manuell starten: Actions → „Run workflow“
 
 permissions:
@@ -45,6 +45,12 @@ jobs:
         run: node scripts/prepare-html.mjs _site
         env:
           SITE_URL: ${{ steps.pages.outputs.base_url }}
+
+      - name: GitHub-Pages-Seiten als Apps laden
+        run: node scripts/update-github.mjs _site
+        env:
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Feed laden (Patchnotes & Esports)
         run: node scripts/update-feed.mjs _site

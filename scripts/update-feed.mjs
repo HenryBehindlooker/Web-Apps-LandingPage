@@ -49,10 +49,10 @@ export async function readConfig() {
     const code = await readFile(new URL("../apps.js", import.meta.url), "utf8");
     const ctx = { window: {} };
     vm.runInNewContext(code, ctx, { timeout: 1000 });
-    return { site: ctx.window.SITE || {}, news: ctx.window.NEWS || {} };
+    return { site: ctx.window.SITE || {}, news: ctx.window.NEWS || {}, github: ctx.window.GITHUB || {} };
   } catch (e) {
     console.warn("apps.js nicht lesbar, nutze Standardwerte:", e.message);
-    return { site: {}, news: {} };
+    return { site: {}, news: {}, github: {} };
   }
 }
 
@@ -70,6 +70,7 @@ try {
 const IMAGE_SIZES = {
   logo: { width: 64, height: 64, fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } },
   thumb: { width: 192, height: 108, fit: "cover" },
+  appicon: { width: 128, height: 128, fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } },
 };
 
 const imageCache = new Map();

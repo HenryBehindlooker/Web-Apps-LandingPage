@@ -2,7 +2,15 @@
   "use strict";
 
   var SITE = window.SITE || {};
-  var APPS = Array.isArray(window.APPS) ? window.APPS : [];
+  var GITHUB = window.GITHUB || {};
+  var APPS = Array.isArray(window.APPS) ? window.APPS.slice() : [];
+  // Automatisch gefundene GitHub-Pages-Seiten anhängen (eigene Einträge in apps.js haben Vorrang)
+  if (GITHUB.show !== false && Array.isArray(window.GITHUB_APPS)) {
+    var key = function (u) { return String(u || "").toLowerCase().replace(/^https?:\/\//, "").replace(/\/+$/, ""); };
+    var known = {};
+    APPS.forEach(function (a) { if (a) known[key(a.url)] = true; });
+    window.GITHUB_APPS.forEach(function (a) { if (a && !known[key(a.url)]) APPS.push(a); });
+  }
   var TAG_ICONS = window.TAG_ICONS || {};
 
   var $ = function (id) { return document.getElementById(id); };
@@ -59,7 +67,7 @@
   }
 
   function norm(s) {
-    return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    return String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
   /* ---------- Karten bauen ---------- */

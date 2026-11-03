@@ -15,13 +15,39 @@ Keine Abhängigkeiten, kein Framework.
 | `icons/`                        | Deine App-Icons (Beispiele: `rechner.svg`, `notizen.svg`, `spiel.svg`) |
 | `og-image.png`, `apple-touch-icon.png` | Vorschaubild beim Teilen, Icon für den Homescreen     |
 | `news.js`                       | Anzeige des LoL-Bereichs                                     |
+| `github-apps.js`                | Platzhalter – wird beim Veröffentlichen durch deine GitHub-Pages-Seiten ersetzt |
 | `feed.js`                       | Platzhalter – wird beim Veröffentlichen durch echte Daten ersetzt |
 | `scripts/update-feed.mjs`       | Holt Patchnotes & Esport-Daten, postet optional nach Discord (läuft auf GitHub) |
+| `scripts/update-github.mjs`     | Sucht deine öffentlichen GitHub-Pages-Seiten (läuft auf GitHub) |
 | `scripts/prepare-html.mjs`      | Trägt Titel & Link-Vorschau aus `apps.js` in die Seite ein   |
 | `package.json`, `package-lock.json` | Bildverkleinerung (`sharp`) – nur für die GitHub Action  |
 | `.github/workflows/deploy.yml`  | Baut und veröffentlicht die Seite – bei jedem Push und stündlich |
 
-## Eine App hinzufügen
+## Deine GitHub-Seiten erscheinen automatisch
+
+Jedes **öffentliche Repository mit GitHub Pages** in deinem Konto wird bei jedem Lauf (stündlich und
+bei jeder Änderung) als App-Karte angezeigt – du musst nichts eintragen.
+
+| Auf der Karte          | Kommt aus                                                       |
+|------------------------|-----------------------------------------------------------------|
+| Name                   | Repository-Name (`mein-tool` → „Mein Tool“)                      |
+| Beschreibung           | „About“-Text des Repositorys, sonst die Beschreibung der Seite  |
+| Kategorien / Filter    | Topics des Repositorys                                          |
+| Icon                   | `apple-touch-icon` bzw. Favicon (SVG/PNG) der Seite             |
+| Label „Neu“            | Repository jünger als 30 Tage                                   |
+
+Nicht aufgeführt werden: diese Landing Page selbst, private, archivierte und geforkte Repositories
+sowie Seiten, die „404“ melden. Einstellungen in `apps.js` unter `GITHUB`
+(z. B. `exclude: ["test-seite"]`, um eine Seite auszublenden).
+
+**Tipp:** Beschreibung und Topics stellst du auf GitHub im Repository rechts bei „About“ → Zahnrad ein.
+Für ein schönes Icon lege in die jeweilige Seite ein `<link rel="apple-touch-icon" href="icon.png">`
+(180 × 180 px) – `.ico`-Dateien kann die Seite nicht verwenden.
+
+Willst du eine Seite anders darstellen, trag sie in `apps.js` bei `APPS` mit **derselben URL** ein –
+dein Eintrag ersetzt dann den automatischen.
+
+## Weitere Apps von Hand hinzufügen
 
 In `apps.js` einen Block kopieren und anpassen:
 
@@ -37,7 +63,7 @@ In `apps.js` einen Block kopieren und anpassen:
 },
 ```
 
-Die drei Beispiel-Einträge kannst du einfach löschen.
+In `apps.js` steht unter `APPS` eine auskommentierte Vorlage zum Kopieren.
 
 ## Icons
 

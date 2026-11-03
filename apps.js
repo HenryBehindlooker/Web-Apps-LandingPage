@@ -33,6 +33,16 @@ window.TAG_ICONS = {
   "Werkzeug": "🛠️",
   "Produktivität": "✅",
   "Spiel": "🎮",
+  // GitHub-Topics erscheinen so: "game" → "Game", "league-of-legends" → "League of legends"
+  "Game": "🎮",
+  "Games": "🎮",
+  "Tool": "🛠️",
+  "Tools": "🛠️",
+  "Productivity": "✅",
+  "League of legends": "⚔️",
+  "Calculator": "🧮",
+  "Weather": "🌦️",
+  "Quiz": "❓",
 };
 
 /*
@@ -57,31 +67,39 @@ window.NEWS = {
   ],
 };
 
+/*
+ *  GITHUB → deine öffentlichen GitHub-Pages-Seiten erscheinen automatisch als Apps.
+ *    show:         false schaltet das aus
+ *    user:         GitHub-Konto; leer = Besitzer dieses Repositorys
+ *    exclude:      Repositories, die nicht erscheinen sollen, z. B. ["test-seite"]
+ *    includeForks: true = auch geforkte Repositories zeigen
+ *    newDays:      Repositories, die jünger sind, bekommen das Label „Neu“
+ *  Name = Repository-Name, Beschreibung = Repository-Beschreibung („About“ auf GitHub),
+ *  Kategorien = Topics des Repositorys, Icon = Favicon der jeweiligen Seite.
+ *  Willst du eine Seite anders darstellen, trag sie unten bei APPS mit derselben URL ein –
+ *  dein Eintrag gewinnt.
+ */
+window.GITHUB = {
+  show: true,
+  user: "",
+  exclude: [],
+  includeForks: false,
+  newDays: 30,
+};
+
+/*
+ *  APPS → zusätzliche Apps von Hand (z. B. Seiten, die nicht auf GitHub liegen).
+ *  Vorlage zum Kopieren:
+ *
+ *  {
+ *    name: "Mein Rechner",
+ *    url: "https://example.com",
+ *    description: "Ein schneller Rechner für den Alltag.",
+ *    icon: "icons/rechner.svg",
+ *    tags: ["Werkzeug"],
+ *    badge: "Neu",
+ *    color: "#6366f1",
+ *  },
+ */
 window.APPS = [
-  {
-    name: "Beispiel: Rechner",
-    url: "https://example.com",
-    description: "Ein schneller Rechner für den Alltag. Ersetze diesen Eintrag durch deine eigene App.",
-    icon: "icons/rechner.svg",
-    tags: ["Werkzeug"],
-    badge: "Neu",
-    color: "#6366f1",
-  },
-  {
-    name: "Beispiel: Notizen",
-    url: "https://example.com",
-    description: "Notizen, die lokal im Browser gespeichert werden.",
-    icon: "icons/notizen.svg",
-    tags: ["Produktivität"],
-    color: "#f59e0b",
-  },
-  {
-    name: "Beispiel: Spiel",
-    url: "https://example.com",
-    description: "Ein kleines Browserspiel für zwischendurch.",
-    icon: "icons/spiel.svg",
-    tags: ["Spiel"],
-    badge: "Beta",
-    color: "#10b981",
-  },
 ];
