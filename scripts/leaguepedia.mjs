@@ -71,14 +71,18 @@ async function cargo(params) {
   const u = new URL(API);
   const all = { action: "cargoquery", format: "json", limit: "500", ...params };
   for (const [k, v] of Object.entries(all)) u.searchParams.set(k, v);
-  const waits = [20000, 45000, 90000]; // Leaguepedia bremst – geduldig erneut versuchen
+  // Leaguepedia bremst – angemeldet lohnt sich Geduld, anonym (gemeinsames Limit) kaum
+  const waits = jar.size && LOGIN_USER ? [20000, 45000, 90000] : [15000];
   for (let attempt = 0; ; attempt++) {
     const res = await fetch(u, { headers: headers(), signal: AbortSignal.timeout(30000) });
     if (!res.ok) throw new Error(`HTTP ${res.status} von Leaguepedia`);
     const data = await res.json();
     if (!data.error) return (data.cargoquery || []).map((row) => row.title);
     const limited = /ratelimit/i.test(data.error.code || "") || /rate limit/i.test(data.error.info || "");
-    if (!limited || attempt >= waits.length) throw new Error(`Leaguepedia: ${data.error.info || data.error.code}`);
+    if (!limited || attempt >= waits.length) {
+      const hint = limited && !LOGIN_USER ? " – Tipp: Bot-Passwort als Secret anlegen (siehe README „Leaguepedia-Anmeldung“)" : "";
+      throw new Error(`${data.error.info || data.error.code}${hint}`);
+    }
     console.log(`  Leaguepedia bremst – warte ${waits[attempt] / 1000} s …`);
     await sleep(waits[attempt]);
   }
