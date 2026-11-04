@@ -102,4 +102,11 @@ window.GITHUB = {
  *  },
  */
 window.APPS = [
+  {
+    name: "Rift Forge",
+    url: "https://henrybehindlooker.github.io/rift-forge/",
+    // Icon und Beschreibung holt die GitHub Action automatisch von der Seite.
+    // Eigene Angaben hier haben Vorrang, z. B.: description: "…", icon: "icons/rift-forge.png",
+    tags: ["League of legends"],
+  },
 ];

@@ -50,10 +50,10 @@ export async function readConfig() {
     const code = await readFile(new URL("../apps.js", import.meta.url), "utf8");
     const ctx = { window: {} };
     vm.runInNewContext(code, ctx, { timeout: 1000 });
-    return { site: ctx.window.SITE || {}, news: ctx.window.NEWS || {}, github: ctx.window.GITHUB || {} };
+    return { site: ctx.window.SITE || {}, news: ctx.window.NEWS || {}, github: ctx.window.GITHUB || {}, apps: ctx.window.APPS || [] };
   } catch (e) {
     console.warn("apps.js nicht lesbar, nutze Standardwerte:", e.message);
-    return { site: {}, news: {}, github: {} };
+    return { site: {}, news: {}, github: {}, apps: [] };
   }
 }
 

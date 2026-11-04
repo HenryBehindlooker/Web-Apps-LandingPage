@@ -144,8 +144,34 @@ export async function fetchGithubApps(cfg) {
   return apps;
 }
 
+const urlKey = (u) => String(u || "").toLowerCase().replace(/^https?:\/\//, "").replace(/\/+$/, "");
+
+/** Einträge von Hand ohne Icon/Beschreibung: beides von der Seite selbst holen */
+async function enrichManual(manual, found) {
+  const known = new Set(found.map((a) => urlKey(a.url)));
+  const extras = [];
+  for (const m of manual) {
+    if (!m || !/^https?:\/\//i.test(m.url || "") || known.has(urlKey(m.url))) continue;
+    if (m.icon && m.description) continue;
+    try {
+      const site = await inspectSite(m.url);
+      extras.push({
+        name: m.name,
+        url: m.url,
+        description: site.description || "",
+        icon: site.icon ? await localImage(site.icon, "appicon") : null,
+        source: "site",
+      });
+      console.log(`  ✓ ${m.name}: Icon/Beschreibung von der Seite geholt`);
+    } catch (e) {
+      console.warn(`  ! ${m.name}: Seite nicht lesbar (${e.message})`);
+    }
+  }
+  return extras;
+}
+
 async function main() {
-  const { github: cfg = {} } = await readConfig();
+  const { github: cfg = {}, apps: manual = [] } = await readConfig();
   let apps = [];
   if (cfg.show === false) {
     console.log("GitHub-Seiten ausgeschaltet (apps.js → GITHUB.show).");
@@ -162,6 +188,7 @@ async function main() {
       }
     }
   }
+  apps = apps.concat(await enrichManual(manual, apps));
   await mkdir(OUT, { recursive: true });
   await writeFile(path.join(OUT, "github-apps.json"), JSON.stringify(apps));
   await writeFile(path.join(OUT, "github-apps.js"), `window.GITHUB_APPS = ${JSON.stringify(apps, null, 1)};\n`);

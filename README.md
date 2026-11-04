@@ -66,6 +66,13 @@ In `apps.js` einen Block kopieren und anpassen:
 
 In `apps.js` steht unter `APPS` eine auskommentierte Vorlage zum Kopieren.
 
+Fehlen bei einem Eintrag `icon` oder `description`, holt die GitHub Action beides automatisch von der
+verlinkten Seite (Favicon/App-Icon und `<meta name="description">`). Es reicht also oft schon:
+
+```js
+{ name: "Rift Forge", url: "https://henrybehindlooker.github.io/rift-forge/" },
+```
+
 ## Icons
 
 **App-Icons:** Bild in den Ordner `icons/` legen und in `apps.js` angeben, z. B. `icon: "icons/mein-tool.png"`.

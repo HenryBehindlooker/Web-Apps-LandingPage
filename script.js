@@ -4,12 +4,27 @@
   var SITE = window.SITE || {};
   var GITHUB = window.GITHUB || {};
   var APPS = Array.isArray(window.APPS) ? window.APPS.slice() : [];
-  // Automatisch gefundene GitHub-Pages-Seiten anhängen (eigene Einträge in apps.js haben Vorrang)
-  if (GITHUB.show !== false && Array.isArray(window.GITHUB_APPS)) {
+  // Einträge von Hand mit Icon/Beschreibung der Seite ergänzen,
+  // automatisch gefundene GitHub-Pages-Seiten anhängen (Einträge von Hand haben Vorrang)
+  if (Array.isArray(window.GITHUB_APPS)) {
     var key = function (u) { return String(u || "").toLowerCase().replace(/^https?:\/\//, "").replace(/\/+$/, ""); };
+    var found = {};
+    window.GITHUB_APPS.forEach(function (a) { if (a) found[key(a.url)] = a; });
     var known = {};
-    APPS.forEach(function (a) { if (a) known[key(a.url)] = true; });
-    window.GITHUB_APPS.forEach(function (a) { if (a && !known[key(a.url)]) APPS.push(a); });
+    APPS = APPS.map(function (a) {
+      if (!a) return a;
+      known[key(a.url)] = true;
+      var f = found[key(a.url)];
+      if (!f) return a;
+      var merged = {};
+      for (var k in a) merged[k] = a[k];
+      if (!merged.icon && f.icon) merged.icon = f.icon;
+      if (!merged.description && f.description) merged.description = f.description;
+      return merged;
+    });
+    if (GITHUB.show !== false) {
+      window.GITHUB_APPS.forEach(function (a) { if (a && a.source === "github" && !known[key(a.url)]) APPS.push(a); });
+    }
   }
   var TAG_ICONS = window.TAG_ICONS || {};
 
